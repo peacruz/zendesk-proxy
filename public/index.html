@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Painel Zendesk IA</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
+<style>
+  :root{--bg:#fff;--bg2:#f7f7f5;--bg3:#f0f0ec;--border:#e0e0d8;--text:#1a1a18;--text2:#6b6b63;--text3:#9b9b93;--green:#3b6d11;--green-bg:#eaf3de;--blue:#185fa5;--blue-bg:#e6f1fb;--red:#993c1d;--red-bg:#faece7;--purple:#3c3489;--purple-bg:#eeedfe;--radius:10px;--radius-sm:6px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg2);color:var(--text);min-height:100vh;}
+  #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px;}
+  .login-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:36px 32px;width:100%;max-width:380px;text-align:center;}
+  .login-icon{font-size:36px;margin-bottom:12px;color:var(--text2);}
+  .login-card h2{font-size:18px;font-weight:600;margin-bottom:4px;}
+  .login-card p{font-size:13px;color:var(--text2);margin-bottom:24px;}
+  .login-card input{width:100%;font-size:15px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:12px;font-family:inherit;outline:none;text-align:center;letter-spacing:2px;}
+  .login-card input:focus{border-color:#aaa;}
+  .login-error{font-size:12px;color:var(--red);margin-top:8px;display:none;}
+  #app-screen{display:none;}
+  .header{background:var(--bg);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:10px;}
+  .header h1{font-size:16px;font-weight:600;flex:1;}
+  .secure-badge{font-size:11px;background:var(--green-bg);color:var(--green);border-radius:99px;padding:3px 10px;display:inline-flex;align-items:center;gap:4px;}
+  .rag-badge{font-size:11px;background:var(--purple-bg);color:var(--purple);border-radius:99px;padding:3px 10px;display:inline-flex;align-items:center;gap:4px;}
+  .btn-logout{font-size:12px;color:var(--text2);background:none;border:1px solid var(--border);border-radius:99px;padding:3px 12px;cursor:pointer;}
+  .btn-logout:hover{color:var(--red);border-color:#f0c0b0;}
+  .container{max-width:900px;margin:0 auto;padding:24px 16px;}
+  .tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap;}
+  .tab{padding:8px 14px;font-size:13px;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
+  .tab:hover{color:var(--text);}.tab.active{color:var(--text);border-bottom-color:var(--text);font-weight:500;}
+  .section{display:none;}.section.active{display:block;}
+  .card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
+  .card-title{font-size:15px;font-weight:600;margin-bottom:4px;}
+  .card-sub{font-size:13px;color:var(--text2);margin-bottom:16px;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .field{display:flex;flex-direction:column;gap:5px;}.field.full{grid-column:1/-1;}
+  label{font-size:12px;color:var(--text2);font-weight:500;}
+  input,select,textarea{width:100%;font-size:14px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);outline:none;font-family:inherit;}
+  input:focus,select:focus,textarea:focus{border-color:#aaa;}
+  textarea{resize:vertical;}
+  .btn{padding:8px 16px;font-size:13px;cursor:pointer;border-radius:var(--radius-sm);display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-weight:500;border:1px solid var(--border);background:var(--bg);color:var(--text);}
+  .btn:hover{background:var(--bg2);}.btn-primary{background:var(--text);color:var(--bg);border-color:var(--text);}.btn-primary:hover{opacity:0.85;}
+  .btn-danger{color:var(--red);border-color:#f0c0b0;}.btn-danger:hover{background:var(--red-bg);}
+  .result-box{background:var(--bg2);border-radius:var(--radius-sm);padding:14px;font-size:13px;line-height:1.65;white-space:pre-wrap;margin-top:12px;border:1px solid var(--border);}
+  .result-box.error{color:var(--red);background:var(--red-bg);border-color:#f0c0b0;}
+  .spinner{display:none;width:15px;height:15px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;}
+  .spinner.dark{border-color:rgba(0,0,0,0.15);border-top-color:var(--text);}.spinner.active{display:inline-block;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .ai-badge{font-size:11px;background:var(--purple-bg);color:var(--purple);border-radius:99px;padding:2px 9px;}
+  .ticket-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .ticket-row:last-child{border-bottom:none;}
+  .ticket-id{color:var(--text2);min-width:56px;font-family:monospace;}.ticket-subject{flex:1;}
+  .priority{font-size:11px;padding:2px 7px;border-radius:4px;white-space:nowrap;}
+  .priority.high{background:var(--red-bg);color:var(--red);}.priority.normal{background:var(--blue-bg);color:var(--blue);}.priority.low{background:var(--green-bg);color:var(--green);}
+  .status-pill{font-size:11px;padding:2px 8px;border-radius:99px;white-space:nowrap;}
+  .status-pill.open{background:var(--blue-bg);color:var(--blue);}.status-pill.pending{background:#fef3e2;color:#a05a00;}.status-pill.solved{background:var(--green-bg);color:var(--green);}
+  .polling-status{display:flex;align-items:center;gap:8px;font-size:13px;padding:10px 14px;border-radius:var(--radius-sm);background:var(--bg2);margin-top:12px;border:1px solid var(--border);}
+  .dot-live{width:8px;height:8px;border-radius:50%;background:#639922;animation:pulse 1.5s infinite;flex-shrink:0;}
+  .dot-off{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
+  .log-box{background:#1a1a18;border-radius:var(--radius-sm);padding:12px;font-size:12px;font-family:'SF Mono','Fira Code',monospace;line-height:1.7;max-height:200px;overflow-y:auto;margin-top:12px;color:#9b9b93;}
+  .log-line.ok{color:#7ec962;}.log-line.err{color:#f07070;}.log-line.info{color:#70b8f0;}
+  .divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+  .info-box{background:var(--blue-bg);border:1px solid #c0d8f0;border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;color:var(--blue);margin-bottom:16px;display:flex;gap:8px;align-items:flex-start;line-height:1.5;}
+  /* RAG articles */
+  .article-list{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+  .article-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;}
+  .article-title{font-size:13px;font-weight:500;margin-bottom:4px;color:var(--text);}
+  .article-snippet{font-size:12px;color:var(--text2);line-height:1.5;}
+  .article-url{font-size:11px;color:var(--blue);margin-top:4px;text-decoration:none;}
+  .article-url:hover{text-decoration:underline;}
+  .rag-notice{background:var(--purple-bg);border:1px solid #d0cef8;border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:var(--purple);margin-top:12px;display:flex;gap:8px;align-items:center;line-height:1.5;}
+  .cat-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+  .cat-item{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;background:var(--bg);}
+  .cat-item:hover{border-color:#bbb;}.cat-item.selected{border-color:var(--text);background:var(--bg2);}
+  .cat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}.cat-name{font-size:13px;font-weight:500;flex:1;}
+  .cat-preview{font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px;}
+  .cat-filled{font-size:11px;color:var(--green);}.cat-empty{font-size:11px;color:var(--text3);}
+  .kb-editor{background:var(--bg2);border-radius:var(--radius);padding:16px;margin-top:16px;border:1px solid var(--border);}
+  .kb-editor-title{font-size:14px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .hint-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+  .hint-chip{font-size:11px;padding:3px 10px;border-radius:99px;background:var(--bg);border:1px solid var(--border);color:var(--text2);cursor:pointer;}
+  .hint-chip:hover{border-color:#aaa;color:var(--text);}
+  .add-cat-row{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-icon"><i class="ti ti-lock"></i></div>
+    <h2>Painel Zendesk IA</h2>
+    <p>Digite a senha de acesso para continuar</p>
+    <input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" autofocus />
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">
+      <div class="spinner" id="login-spinner"></div>
+      <i class="ti ti-arrow-right"></i> Entrar
+    </button>
+    <p class="login-error" id="login-error"></p>
+  </div>
+</div>
+
+<div id="app-screen">
+  <div class="header">
+    <i class="ti ti-headset" style="font-size:20px"></i>
+    <h1>Painel Zendesk IA</h1>
+    <span class="secure-badge"><i class="ti ti-shield-check" style="font-size:11px"></i> Protegido</span>
+    <span class="rag-badge"><i class="ti ti-search" style="font-size:11px"></i> RAG ativo</span>
+    <button class="btn-logout" onclick="doLogout()"><i class="ti ti-logout" style="font-size:12px"></i> Sair</button>
+  </div>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('status',this)"><i class="ti ti-activity"></i> Status</button>
+      <button class="tab" onclick="switchTab('kb',this)"><i class="ti ti-book"></i> Base de conhecimento</button>
+      <button class="tab" onclick="switchTab('rag',this)"><i class="ti ti-search"></i> Testar RAG</button>
+      <button class="tab" onclick="switchTab('auto',this)"><i class="ti ti-robot"></i> Agente automático</button>
+      <button class="tab" onclick="switchTab('criar',this)"><i class="ti ti-user-plus"></i> Criar agente</button>
+      <button class="tab" onclick="switchTab('responder',this)"><i class="ti ti-message-reply"></i> Responder ticket</button>
+      <button class="tab" onclick="switchTab('triagem',this)"><i class="ti ti-adjustments"></i> Triagem IA</button>
+      <button class="tab" onclick="switchTab('consultar',this)"><i class="ti ti-list"></i> Consultar tickets</button>
+    </div>
+
+    <!-- Status -->
+    <div class="section active" id="tab-status">
+      <div class="card">
+        <p class="card-title">Conexão com Zendesk</p>
+        <p class="card-sub">Credenciais protegidas no servidor Vercel. RAG busca artigos do Help Center em tempo real.</p>
+        <div class="info-box">
+          <i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i>
+          <span>As credenciais ficam nas variáveis de ambiente do Vercel. O RAG usa a API do Help Center (<strong>suporte.metadados.com.br/hc/pt-br</strong>) para buscar artigos relevantes a cada ticket automaticamente.</span>
+        </div>
+        <button class="btn btn-primary" onclick="testConnection()">
+          <div class="spinner" id="test-spinner"></div>
+          <i class="ti ti-plug"></i> Testar conexão
+        </button>
+        <div class="result-box" id="test-result" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Base de conhecimento manual -->
+    <div class="section" id="tab-kb">
+      <div class="card">
+        <p class="card-title">Base de conhecimento manual</p>
+        <p class="card-sub">Regras, políticas e instruções específicas por categoria. Complementa o RAG com informações que não estão nos artigos públicos.</p>
+        <div class="cat-list" id="cat-list"></div>
+        <div class="add-cat-row">
+          <input type="text" id="new-cat-name" placeholder="Nova categoria" style="max-width:220px" />
+          <input type="color" id="new-cat-color" value="#7F77DD" style="width:38px;height:38px;padding:2px;border-radius:6px;cursor:pointer;border:1px solid var(--border)" />
+          <button class="btn btn-primary" onclick="addCategory()"><i class="ti ti-plus"></i> Adicionar</button>
+        </div>
+        <div class="kb-editor" id="kb-editor" style="display:none">
+          <div class="kb-editor-title">
+            <span id="kb-editor-dot" style="width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0"></span>
+            <span id="kb-editor-label"></span>
+            <span class="ai-badge">IA usará este contexto</span>
+          </div>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:8px">Escreva regras internas, políticas e procedimentos que não estão nos artigos públicos do Help Center.</p>
+          <div class="hint-chips" id="hint-chips"></div>
+          <textarea id="kb-textarea" rows="8" placeholder="Ex: SLA interno: tickets de cobrança devem ser respondidos em até 2h. Para reembolsos acima de R$500, escale para o time financeiro..."></textarea>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="saveKb()"><i class="ti ti-device-floppy"></i> Salvar</button>
+            <button class="btn btn-danger" onclick="deleteCategory()"><i class="ti ti-trash"></i> Excluir</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Testar RAG -->
+    <div class="section" id="tab-rag">
+      <div class="card">
+        <p class="card-title">Testar busca RAG <span class="ai-badge">Help Center</span></p>
+        <p class="card-sub">Simule como o agente busca artigos relevantes para um ticket. Os artigos encontrados são injetados no prompt antes de gerar a resposta.</p>
+        <div class="field full" style="margin-bottom:12px">
+          <label>Descreva o problema ou dúvida do cliente</label>
+          <textarea id="rag-query" rows="3" placeholder="Ex: Como lançar atestado médico no sistema? O cliente não consegue processar a folha de pagamento."></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Quantidade de artigos</label>
+            <select id="rag-max">
+              <option value="3">3 artigos</option>
+              <option value="5" selected>5 artigos</option>
+              <option value="8">8 artigos</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="testRag()">
+          <div class="spinner" id="rag-spinner"></div>
+          <i class="ti ti-search"></i> Buscar artigos relevantes
+        </button>
+        <div id="rag-result" style="display:none;margin-top:16px">
+          <p style="font-size:12px;color:var(--text2);margin-bottom:8px">Artigos encontrados — estes serão injetados no prompt do agente:</p>
+          <div class="article-list" id="article-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agente automático -->
+    <div class="section" id="tab-auto">
+      <div class="card">
+        <p class="card-title">Agente automático <span class="ai-badge">IA + RAG</span></p>
+        <p class="card-sub">Para cada ticket novo: busca artigos relevantes no Help Center → injeta como contexto → gera resposta personalizada.</p>
+        <div class="field-row">
+          <div class="field"><label>Intervalo de verificação</label>
+            <select id="poll-interval">
+              <option value="60">A cada 1 minuto</option>
+              <option value="180">A cada 3 minutos</option>
+              <option value="300" selected>A cada 5 minutos</option>
+              <option value="600">A cada 10 minutos</option>
+            </select>
+          </div>
+          <div class="field"><label>Responder tickets com status</label>
+            <select id="poll-filter">
+              <option value="new">Novos</option>
+              <option value="open">Abertos</option>
+              <option value="new,open">Novos e abertos</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Tom padrão</label>
+            <select id="auto-tom">
+              <option value="formal">Formal e profissional</option>
+              <option value="amigavel">Amigável e empático</option>
+              <option value="tecnico">Técnico e direto</option>
+            </select>
+          </div>
+          <div class="field"><label>Visibilidade</label>
+            <select id="auto-public">
+              <option value="true">Pública — envia ao cliente</option>
+              <option value="false">Interna — nota privada</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Artigos RAG por ticket</label>
+            <select id="auto-rag-max">
+              <option value="3">3 artigos</option>
+              <option value="5" selected>5 artigos</option>
+              <option value="8">8 artigos</option>
+            </select>
+          </div>
+          <div class="field"><label>Categoria da base manual (opcional)</label>
+            <select id="auto-categoria"><option value="">Sem base manual</option></select>
+          </div>
+        </div>
+        <hr class="divider" />
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btn-start-agent" onclick="startAgent()">
+            <div class="spinner" id="auto-spinner"></div>
+            <i class="ti ti-player-play"></i> Iniciar agente
+          </button>
+          <button class="btn" id="btn-stop-agent" onclick="stopAgent()" style="display:none">
+            <i class="ti ti-player-pause"></i> Pausar agente
+          </button>
+        </div>
+        <div class="polling-status" id="polling-status" style="display:none">
+          <div class="dot-off" id="status-dot"></div>
+          <span id="status-text" style="color:var(--text2)">Agente pausado</span>
+        </div>
+        <div class="log-box" id="agent-log" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Criar agente -->
+    <div class="section" id="tab-criar">
+      <div class="card">
+        <p class="card-title">Novo agente Zendesk</p>
+        <div class="field-row">
+          <div class="field"><label>Nome</label><input type="text" id="agent-name" placeholder="João Silva" /></div>
+          <div class="field"><label>E-mail</label><input type="email" id="agent-email" placeholder="joao@empresa.com" /></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Papel</label><select id="agent-role"><option value="agent">Agente</option><option value="admin">Administrador</option></select></div>
+          <div class="field"><label>Senha temporária</label><input type="password" id="agent-password" placeholder="Mínimo 8 caracteres" /></div>
+        </div>
+        <button class="btn btn-primary" onclick="createAgent()">
+          <div class="spinner" id="criar-spinner"></div>
+          <i class="ti ti-user-plus"></i> Criar agente
+        </button>
+        <div class="result-box" id="criar-result" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Responder ticket -->
+    <div class="section" id="tab-responder">
+      <div class="card">
+        <p class="card-title">Responder ticket <span class="ai-badge">IA + RAG</span></p>
+        <div class="field-row">
+          <div class="field"><label>ID do ticket</label><input type="number" id="ticket-id-resp" placeholder="12345" /></div>
+          <div class="field"><label>Tom</label><select id="resp-tom"><option value="formal">Formal e profissional</option><option value="amigavel">Amigável e empático</option><option value="tecnico">Técnico e direto</option></select></div>
+        </div>
+        <div class="field full" style="margin-bottom:12px">
+          <label>Problema relatado pelo cliente</label>
+          <textarea id="resp-contexto" rows="4" placeholder="Descreva o problema — o agente vai buscar artigos relevantes automaticamente..."></textarea>
+        </div>
+        <div class="field full" style="margin-bottom:12px">
+          <label>Base manual adicional (opcional)</label>
+          <select id="resp-categoria"><option value="">Nenhuma</option></select>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="generateReply()">
+            <div class="spinner" id="resp-spinner"></div>
+            <i class="ti ti-sparkles"></i> Gerar resposta com IA + RAG
+          </button>
+          <button class="btn" id="btn-send-reply" style="display:none" onclick="sendReply()">
+            <div class="spinner dark" id="send-spinner"></div>
+            <i class="ti ti-send"></i> Enviar ao Zendesk
+          </button>
+        </div>
+        <div id="resp-rag-info" style="display:none" class="rag-notice">
+          <i class="ti ti-books" style="font-size:14px;flex-shrink:0"></i>
+          <span id="resp-rag-text"></span>
+        </div>
+        <div class="result-box" id="resp-result" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Triagem IA -->
+    <div class="section" id="tab-triagem">
+      <div class="card">
+        <p class="card-title">Triagem inteligente <span class="ai-badge">IA</span></p>
+        <div class="field-row">
+          <div class="field"><label>ID do ticket</label><input type="number" id="ticket-id-triage" placeholder="12345" /></div>
+        </div>
+        <div class="field full" style="margin-bottom:12px">
+          <label>Conteúdo do ticket</label>
+          <textarea id="triage-content" rows="4" placeholder="Ex: 'Não consigo processar a folha de pagamento. Aparece erro 403.'"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="triageTicket()">
+          <div class="spinner" id="triage-spinner"></div>
+          <i class="ti ti-adjustments"></i> Analisar e categorizar
+        </button>
+        <div class="result-box" id="triage-result" style="display:none"></div>
+        <div style="display:none;margin-top:12px" id="triage-actions">
+          <button class="btn btn-primary" onclick="applyTriage()">
+            <div class="spinner" id="apply-spinner"></div>
+            <i class="ti ti-check"></i> Aplicar no Zendesk
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Consultar tickets -->
+    <div class="section" id="tab-consultar">
+      <div class="card">
+        <p class="card-title">Consultar tickets</p>
+        <div class="field-row">
+          <div class="field"><label>Status</label><select id="filter-status"><option value="open">Abertos</option><option value="pending">Pendentes</option><option value="solved">Resolvidos</option><option value="new">Novos</option></select></div>
+          <div class="field"><label>Quantidade</label><select id="filter-limit"><option value="5">5</option><option value="10">10</option><option value="25">25</option></select></div>
+        </div>
+        <button class="btn btn-primary" onclick="fetchTickets()">
+          <div class="spinner" id="consultar-spinner"></div>
+          <i class="ti ti-refresh"></i> Buscar tickets
+        </button>
+        <div id="tickets-list" style="margin-top:16px;display:none"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PROXY = '/api/zendesk';
+let SESSION_PASSWORD = null;
+let lastTriageData = null;
+let lastGeneratedReply = null;
+let agentInterval = null;
+let processedTickets = new Set();
+let agentLogs = [];
+
+const defaultCategories = [
+  {id:'billing',name:'Cobrança',color:'#7F77DD',kb:''},
+  {id:'technical',name:'Suporte técnico',color:'#1D9E75',kb:''},
+  {id:'shipping',name:'Entrega / Logística',color:'#D85A30',kb:''},
+  {id:'general',name:'Geral',color:'#888780',kb:''},
+  {id:'complaint',name:'Reclamação',color:'#D4537E',kb:''},
+];
+const hintsByCategory = {
+  billing:['SLA interno','Processo de reembolso','Escalonamento financeiro','Cobranças duplicadas'],
+  technical:['Erros conhecidos','Passos de diagnóstico','Escalação para dev','SLA técnico'],
+  shipping:['Prazo de entrega','Como rastrear','Política de troca','Danos na entrega'],
+  general:['Horário de atendimento','Canais de contato','Tom de voz padrão'],
+  complaint:['Tom empático','Processo de escalação','Compensações permitidas'],
+};
+let categories = [];
+try { categories = JSON.parse(localStorage.getItem('zd_kb_categories')||'null') || defaultCategories.map(c=>({...c})); } catch(e) { categories = defaultCategories.map(c=>({...c})); }
+let selectedCatId = null;
+
+async function doLogin() {
+  const pwd = document.getElementById('login-password').value;
+  if (!pwd) return;
+  setSpinner('login-spinner', true);
+  document.getElementById('login-error').style.display = 'none';
+  try {
+    const r = await fetch(`${PROXY}?path=/users/me.json`, { headers: {'Content-Type':'application/json','x-panel-password':pwd} });
+    if (r.status === 401) {
+      document.getElementById('login-error').textContent = 'Senha incorreta. Tente novamente.';
+      document.getElementById('login-error').style.display = 'block';
+    } else {
+      SESSION_PASSWORD = pwd;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app-screen').style.display = 'block';
+      renderCatList();
+    }
+  } catch(e) {
+    document.getElementById('login-error').textContent = `Erro: ${e.message}`;
+    document.getElementById('login-error').style.display = 'block';
+  }
+  setSpinner('login-spinner', false);
+}
+
+function doLogout() {
+  SESSION_PASSWORD = null;
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-screen').style.display = 'none';
+  if (agentInterval) { clearInterval(agentInterval); agentInterval = null; }
+}
+
+function proxyHeaders(extra={}) { return {'Content-Type':'application/json','x-panel-password':SESSION_PASSWORD,...extra}; }
+async function zdFetch(path, method='GET', body=null) {
+  const opts = {method, headers: proxyHeaders()};
+  if (body) opts.body = JSON.stringify(body);
+  return fetch(`${PROXY}?path=${encodeURIComponent(path)}`, opts);
+}
+async function ragSearch(query, max_articles=5) {
+  const r = await fetch(PROXY, { method:'POST', headers: proxyHeaders({'x-action':'rag-search'}), body: JSON.stringify({query, max_articles}) });
+  if (!r.ok) throw new Error('Erro na busca RAG');
+  const d = await r.json();
+  return d.articles || [];
+}
+function articlesToContext(articles) {
+  if (!articles.length) return '';
+  return '\n\nARTIGOS RELEVANTES DO HELP CENTER (use como referência):\n' +
+    articles.map((a,i) => `[${i+1}] ${a.title}\n${a.body}`).join('\n\n---\n\n');
+}
+
+function saveCategories() { try { localStorage.setItem('zd_kb_categories', JSON.stringify(categories)); } catch(e) {} }
+function renderCatList() {
+  const list = document.getElementById('cat-list');
+  if (!categories.length) { list.innerHTML = '<p style="font-size:13px;color:var(--text2)">Nenhuma categoria ainda.</p>'; return; }
+  list.innerHTML = categories.map(c=>`
+    <div class="cat-item ${selectedCatId===c.id?'selected':''}" onclick="selectCat('${c.id}')">
+      <div class="cat-dot" style="background:${c.color}"></div>
+      <span class="cat-name">${c.name}</span>
+      ${c.kb?`<span class="cat-preview">${c.kb.substring(0,60)}${c.kb.length>60?'…':''}</span><span class="cat-filled">✓ preenchida</span>`:'<span class="cat-empty">vazia</span>'}
+    </div>`).join('');
+  updateCategorySelects();
+}
+function selectCat(id) {
+  selectedCatId = id;
+  const cat = categories.find(c=>c.id===id);
+  document.getElementById('kb-editor').style.display = 'block';
+  document.getElementById('kb-editor-dot').style.background = cat.color;
+  document.getElementById('kb-editor-label').textContent = cat.name;
+  document.getElementById('kb-textarea').value = cat.kb || '';
+  const hints = hintsByCategory[id] || ['Política interna','Tom de voz','Procedimento padrão'];
+  document.getElementById('hint-chips').innerHTML = hints.map(h=>`<span class="hint-chip" onclick="insertHint('${h}')">${h}</span>`).join('');
+  renderCatList();
+}
+function insertHint(hint) {
+  const ta = document.getElementById('kb-textarea');
+  ta.value = ta.value + (ta.value?`\n\n${hint}: `:`${hint}: `);
+  ta.focus();
+}
+function saveKb() {
+  if (!selectedCatId) return;
+  categories.find(c=>c.id===selectedCatId).kb = document.getElementById('kb-textarea').value.trim();
+  saveCategories(); renderCatList();
+}
+function addCategory() {
+  const name = document.getElementById('new-cat-name').value.trim();
+  const color = document.getElementById('new-cat-color').value;
+  if (!name) return;
+  const id = 'cat_'+Date.now();
+  categories.push({id,name,color,kb:''});
+  saveCategories(); document.getElementById('new-cat-name').value='';
+  renderCatList(); selectCat(id);
+}
+function deleteCategory() {
+  if (!selectedCatId||!confirm('Excluir esta categoria?')) return;
+  categories = categories.filter(c=>c.id!==selectedCatId);
+  selectedCatId = null;
+  document.getElementById('kb-editor').style.display='none';
+  saveCategories(); renderCatList();
+}
+function updateCategorySelects() {
+  const opts = '<option value="">Nenhuma</option>'+categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  document.getElementById('resp-categoria').innerHTML = opts;
+  document.getElementById('auto-categoria').innerHTML = opts;
+}
+function buildSystemPrompt(catId, tom, ragContext='') {
+  const tones = {formal:'formal e profissional',amigavel:'amigável e empático',tecnico:'técnico e direto'};
+  const kb = (categories.find(c=>c.id===catId)||{}).kb||'';
+  let sys = `Você é um agente de suporte ao cliente da Metadados, especialista em sistemas de RH. Responda de forma ${tones[tom]||'profissional'}. Seja objetivo, útil e preciso. Não use saudações genéricas.`;
+  if (kb) sys += `\n\nINSTRUÇÕES INTERNAS:\n${kb}`;
+  if (ragContext) sys += ragContext;
+  sys += '\n\nSe a resposta estiver nos artigos acima, baseie-se neles. Se não souber, oriente o cliente a entrar em contato com o suporte.';
+  return sys;
+}
+
+function showResult(id, text, isError) {
+  const el = document.getElementById(id);
+  el.style.display='block';
+  el.className='result-box'+(isError?' error':'');
+  el.textContent=text;
+}
+function setSpinner(id, active) { document.getElementById(id).classList.toggle('active',active); }
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+  btn.classList.add('active');
+}
+
+async function testConnection() {
+  setSpinner('test-spinner',true);
+  try {
+    const r = await zdFetch('/users/me.json');
+    const d = await r.json();
+    if (r.ok) showResult('test-result',`✓ Conectado como: ${d.user.name} (${d.user.email})\nFunção: ${d.user.role}\n\nRAG: Help Center em suporte.metadados.com.br/hc/pt-br`,false);
+    else showResult('test-result',`Erro ${r.status}: ${d.error}`,true);
+  } catch(e) { showResult('test-result',`Erro: ${e.message}`,true); }
+  setSpinner('test-spinner',false);
+}
+
+async function testRag() {
+  const query = document.getElementById('rag-query').value.trim();
+  const max = parseInt(document.getElementById('rag-max').value);
+  if (!query) return;
+  setSpinner('rag-spinner',true);
+  document.getElementById('rag-result').style.display='none';
+  try {
+    const articles = await ragSearch(query, max);
+    const listEl = document.getElementById('article-list');
+    if (!articles.length) {
+      listEl.innerHTML='<p style="font-size:13px;color:var(--text2)">Nenhum artigo encontrado para esta busca.</p>';
+    } else {
+      listEl.innerHTML = articles.map(a=>`
+        <div class="article-card">
+          <p class="article-title">${a.title}</p>
+          <p class="article-snippet">${a.snippet || a.body.substring(0,200)+'…'}</p>
+          <a class="article-url" href="${a.url}" target="_blank"><i class="ti ti-external-link" style="font-size:11px"></i> Ver artigo completo</a>
+        </div>`).join('');
+    }
+    document.getElementById('rag-result').style.display='block';
+  } catch(e) { alert(`Erro RAG: ${e.message}`); }
+  setSpinner('rag-spinner',false);
+}
+
+async function generateReply() {
+  const contexto = document.getElementById('resp-contexto').value.trim();
+  const tom = document.getElementById('resp-tom').value;
+  const catId = document.getElementById('resp-categoria').value;
+  if (!contexto) { showResult('resp-result','Descreva o problema do cliente.',true); return; }
+  setSpinner('resp-spinner',true);
+  document.getElementById('btn-send-reply').style.display='none';
+  document.getElementById('resp-rag-info').style.display='none';
+  showResult('resp-result','Buscando artigos relevantes no Help Center...',false);
+  try {
+    const articles = await ragSearch(contexto, 5);
+    const ragContext = articlesToContext(articles);
+    if (articles.length) {
+      document.getElementById('resp-rag-text').textContent = `${articles.length} artigos encontrados: ${articles.map(a=>a.title).join(' · ')}`;
+      document.getElementById('resp-rag-info').style.display='flex';
+    }
+    showResult('resp-result','Gerando resposta com IA...',false);
+    const res = await fetch(PROXY,{method:'POST',headers:proxyHeaders({'x-action':'anthropic'}),
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:buildSystemPrompt(catId,tom,ragContext),messages:[{role:'user',content:`Ticket do cliente: ${contexto}`}]})
+    });
+    const d = await res.json();
+    lastGeneratedReply = d.content[0].text;
+    showResult('resp-result',lastGeneratedReply,false);
+    document.getElementById('btn-send-reply').style.display='inline-flex';
+  } catch(e) { showResult('resp-result',`Erro: ${e.message}`,true); }
+  setSpinner('resp-spinner',false);
+}
+
+async function sendReply() {
+  const ticketId = document.getElementById('ticket-id-resp').value.trim();
+  if (!ticketId||!lastGeneratedReply) return;
+  setSpinner('send-spinner',true);
+  try {
+    const r = await zdFetch(`/tickets/${ticketId}.json`,'PUT',{ticket:{comment:{body:lastGeneratedReply,public:true}}});
+    const d = await r.json();
+    if (r.ok) showResult('resp-result',`✓ Resposta enviada ao ticket #${ticketId}!\n\n${lastGeneratedReply}`,false);
+    else showResult('resp-result',`Erro: ${JSON.stringify(d.error)}`,true);
+  } catch(e) { showResult('resp-result',`Erro: ${e.message}`,true); }
+  setSpinner('send-spinner',false);
+}
+
+async function triageTicket() {
+  const content = document.getElementById('triage-content').value.trim();
+  if (!content) { showResult('triage-result','Insira o conteúdo do ticket.',true); return; }
+  setSpinner('triage-spinner',true);
+  document.getElementById('triage-actions').style.display='none';
+  showResult('triage-result','Analisando com IA...',false);
+  try {
+    const catIds = categories.map(c=>c.id).join(',');
+    const catNames = categories.map(c=>c.name).join(', ');
+    const res = await fetch(PROXY,{method:'POST',headers:proxyHeaders({'x-action':'anthropic'}),
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,messages:[{role:'user',content:`Analise este ticket. Responda APENAS em JSON sem markdown: {"categoria":"string","categoriaId":"uma de: ${catIds}","prioridade":"high/normal/low","tags":["array","max3"],"resumo":"max 15 palavras","sentimento":"positivo/neutro/negativo/urgente"}\n\nCategorias: ${catNames}\n\nTicket: ${content}`}]})
+    });
+    const d = await res.json();
+    lastTriageData = JSON.parse(d.content[0].text.replace(/```json|```/g,'').trim());
+    showResult('triage-result',`Categoria: ${lastTriageData.categoria}\nPrioridade: ${lastTriageData.prioridade}\nSentimento: ${lastTriageData.sentimento}\nTags: ${lastTriageData.tags.join(', ')}\nResumo: ${lastTriageData.resumo}`,false);
+    document.getElementById('triage-actions').style.display='block';
+  } catch(e) { showResult('triage-result',`Erro: ${e.message}`,true); }
+  setSpinner('triage-spinner',false);
+}
+
+async function applyTriage() {
+  const ticketId = document.getElementById('ticket-id-triage').value.trim();
+  if (!ticketId||!lastTriageData) return;
+  setSpinner('apply-spinner',true);
+  try {
+    const r = await zdFetch(`/tickets/${ticketId}.json`,'PUT',{ticket:{priority:lastTriageData.prioridade,tags:lastTriageData.tags,comment:{body:`[IA] Triagem: ${lastTriageData.resumo}`,public:false}}});
+    const d = await r.json();
+    if (r.ok) showResult('triage-result',`✓ Triagem aplicada ao ticket #${ticketId}!\nPrioridade: ${lastTriageData.prioridade}\nTags: ${lastTriageData.tags.join(', ')}`,false);
+    else showResult('triage-result',`Erro: ${JSON.stringify(d.error)}`,true);
+  } catch(e) { showResult('triage-result',`Erro: ${e.message}`,true); }
+  setSpinner('apply-spinner',false);
+}
+
+async function createAgent() {
+  const name=document.getElementById('agent-name').value.trim();
+  const email=document.getElementById('agent-email').value.trim();
+  const role=document.getElementById('agent-role').value;
+  const password=document.getElementById('agent-password').value;
+  if (!name||!email){showResult('criar-result','Preencha nome e e-mail.',true);return;}
+  setSpinner('criar-spinner',true);
+  try {
+    const r=await zdFetch('/users.json','POST',{user:{name,email,role,password:password||undefined}});
+    const d=await r.json();
+    if (r.ok) showResult('criar-result',`✓ Agente criado!\nID: ${d.user.id}\nNome: ${d.user.name}\nE-mail: ${d.user.email}`,false);
+    else showResult('criar-result',`Erro: ${JSON.stringify(d.errors||d.error)}`,true);
+  } catch(e){showResult('criar-result',`Erro: ${e.message}`,true);}
+  setSpinner('criar-spinner',false);
+}
+
+async function fetchTickets() {
+  const status=document.getElementById('filter-status').value;
+  const limit=document.getElementById('filter-limit').value;
+  setSpinner('consultar-spinner',true);
+  const listEl=document.getElementById('tickets-list');
+  listEl.style.display='none';
+  try {
+    const r=await zdFetch(`/tickets.json?status=${status}&per_page=${limit}&sort_by=created_at&sort_order=desc`);
+    const d=await r.json();
+    if (!r.ok){listEl.innerHTML=`<p style="color:var(--red)">Erro: ${d.error}</p>`;listEl.style.display='block';setSpinner('consultar-spinner',false);return;}
+    const tickets=d.tickets||[];
+    if (!tickets.length){listEl.innerHTML='<p style="font-size:13px;color:var(--text2)">Nenhum ticket encontrado.</p>';listEl.style.display='block';setSpinner('consultar-spinner',false);return;}
+    const pMap={high:'<span class="priority high">alta</span>',normal:'<span class="priority normal">normal</span>',low:'<span class="priority low">baixa</span>',urgent:'<span class="priority high">urgente</span>'};
+    const sMap={open:'open',pending:'pending',solved:'solved',new:'open'};
+    listEl.innerHTML=tickets.map(t=>`<div class="ticket-row"><span class="ticket-id">#${t.id}</span><span class="ticket-subject">${t.subject||'(sem assunto)'}</span>${pMap[t.priority]||pMap.normal}<span class="status-pill ${sMap[t.status]||'open'}">${t.status}</span></div>`).join('');
+    listEl.style.display='block';
+  } catch(e){listEl.innerHTML=`<p style="color:var(--red)">Erro: ${e.message}</p>`;listEl.style.display='block';}
+  setSpinner('consultar-spinner',false);
+}
+
+function addLog(type,msg){
+  const ts=new Date().toLocaleTimeString('pt-BR');
+  agentLogs.unshift({type,msg,ts});
+  if(agentLogs.length>50) agentLogs.pop();
+  const box=document.getElementById('agent-log');
+  box.style.display='block';
+  box.innerHTML=agentLogs.map(l=>`<div class="log-line ${l.type}">[${l.ts}] ${l.msg}</div>`).join('');
+}
+
+async function runAgentCycle() {
+  const statuses=document.getElementById('poll-filter').value.split(',');
+  const tom=document.getElementById('auto-tom').value;
+  const isPublic=document.getElementById('auto-public').value==='true';
+  const ragMax=parseInt(document.getElementById('auto-rag-max').value);
+  const catId=document.getElementById('auto-categoria').value;
+  addLog('info',`Verificando tickets...`);
+  for (const status of statuses) {
+    try {
+      const r=await zdFetch(`/tickets.json?status=${status}&per_page=10&sort_by=created_at&sort_order=desc`);
+      const d=await r.json();
+      if (!r.ok){addLog('err',`Erro: ${d.error}`);continue;}
+      const newTickets=(d.tickets||[]).filter(t=>!processedTickets.has(t.id));
+      if (!newTickets.length){addLog('info',`Nenhum ticket novo (${status}).`);continue;}
+      addLog('ok',`${newTickets.length} ticket(s) novo(s).`);
+      for (const ticket of newTickets) {
+        processedTickets.add(ticket.id);
+        addLog('info',`#${ticket.id}: ${ticket.subject}`);
+        try {
+          const query=`${ticket.subject} ${ticket.description||''}`.substring(0,300);
+          addLog('info',`Buscando artigos RAG...`);
+          const articles=await ragSearch(query,ragMax);
+          addLog('info',`${articles.length} artigo(s) encontrado(s).`);
+          const ragContext=articlesToContext(articles);
+          const repR=await fetch(PROXY,{method:'POST',headers:proxyHeaders({'x-action':'anthropic'}),body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:buildSystemPrompt(catId,tom,ragContext),messages:[{role:'user',content:`Ticket: ${ticket.subject}\n\n${ticket.description||''}`}]})});
+          const repD=await repR.json();
+          const reply=repD.content[0].text;
+          const upd=await zdFetch(`/tickets/${ticket.id}.json`,'PUT',{ticket:{comment:{body:reply,public:isPublic}}});
+          if (upd.ok) addLog('ok',`✓ #${ticket.id} respondido com RAG.`);
+          else addLog('err',`Falha ao responder #${ticket.id}.`);
+        } catch(e){addLog('err',`Erro #${ticket.id}: ${e.message}`);}
+      }
+    } catch(e){addLog('err',`Erro de rede: ${e.message}`);}
+  }
+}
+
+function startAgent(){
+  if(agentInterval) return;
+  const sec=parseInt(document.getElementById('poll-interval').value);
+  document.getElementById('btn-start-agent').style.display='none';
+  document.getElementById('btn-stop-agent').style.display='inline-flex';
+  document.getElementById('polling-status').style.display='flex';
+  document.getElementById('status-dot').className='dot-live';
+  document.getElementById('status-text').textContent=`Agente ativo — verificando a cada ${sec}s`;
+  addLog('ok','Agente iniciado com RAG.');
+  runAgentCycle();
+  agentInterval=setInterval(runAgentCycle,sec*1000);
+}
+function stopAgent(){
+  clearInterval(agentInterval);agentInterval=null;
+  document.getElementById('btn-start-agent').style.display='inline-flex';
+  document.getElementById('btn-stop-agent').style.display='none';
+  document.getElementById('status-dot').className='dot-off';
+  document.getElementById('status-text').textContent='Agente pausado';
+  addLog('info','Agente pausado.');
+}
+</script>
+</body>
+</html>

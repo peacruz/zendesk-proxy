@@ -1,0 +1,8 @@
+{
+  "name": "zendesk-proxy",
+  "version": "1.0.0",
+  "description": "Proxy CORS para a API do Zendesk",
+  "engines": {
+    "node": "24.x"
+  }
+}
