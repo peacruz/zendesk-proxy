@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Painel Zendesk IA v2</title>
+<title>Painel Zendesk IA</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
 <style>
   :root{--bg:#fff;--bg2:#f7f7f5;--bg3:#f0f0ec;--border:#e0e0d8;--text:#1a1a18;--text2:#6b6b63;--text3:#9b9b93;--green:#3b6d11;--green-bg:#eaf3de;--blue:#185fa5;--blue-bg:#e6f1fb;--red:#993c1d;--red-bg:#faece7;--purple:#3c3489;--purple-bg:#eeedfe;--radius:10px;--radius-sm:6px;}
@@ -83,6 +83,33 @@
   .hint-chip{font-size:11px;padding:3px 10px;border-radius:99px;background:var(--bg);border:1px solid var(--border);color:var(--text2);cursor:pointer;}
   .hint-chip:hover{border-color:#aaa;color:var(--text);}
   .add-cat-row{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+
+  /* CSAT Comparison */
+  .csat-card{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:24px;overflow:hidden;}
+  .csat-header{background:var(--bg2);padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .csat-ticket-id{font-size:12px;font-family:monospace;color:var(--text2);}
+  .csat-subject{font-size:14px;font-weight:600;flex:1;}
+  .csat-good{font-size:11px;background:var(--green-bg);color:var(--green);border-radius:99px;padding:2px 8px;}
+  .csat-body{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  .csat-col{padding:16px;}
+  .csat-col:first-child{border-right:1px solid var(--border);}
+  .csat-col-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+  .csat-text{font-size:13px;line-height:1.65;color:var(--text);white-space:pre-wrap;background:var(--bg2);border-radius:var(--radius-sm);padding:12px;min-height:100px;}
+  .csat-text.loading{color:var(--text2);font-style:italic;}
+  .csat-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .score-label{font-size:12px;color:var(--text2);font-weight:500;}
+  .score-stars{display:flex;gap:4px;}
+  .star{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--bg);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+  .star:hover,.star.active{background:#fef3e2;border-color:#f0a800;color:#f0a800;}
+  .score-desc{font-size:12px;color:var(--text2);margin-left:4px;}
+  .csat-note{width:100%;font-size:13px;padding:6px 10px;margin-top:8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;}
+  .csat-summary{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;}
+  .csat-summary-title{font-size:14px;font-weight:600;margin-bottom:12px;}
+  .score-bar{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .score-bar-label{font-size:12px;color:var(--text2);min-width:40px;}
+  .score-bar-track{flex:1;height:8px;background:var(--bg3);border-radius:99px;overflow:hidden;}
+  .score-bar-fill{height:100%;border-radius:99px;background:var(--green);transition:width .4s;}
+  .score-bar-val{font-size:12px;font-weight:500;min-width:30px;text-align:right;}
 </style>
 </head>
 <body>
@@ -120,6 +147,7 @@
       <button class="tab" onclick="switchTab('responder',this)"><i class="ti ti-message-reply"></i> Responder ticket</button>
       <button class="tab" onclick="switchTab('triagem',this)"><i class="ti ti-adjustments"></i> Triagem IA</button>
       <button class="tab" onclick="switchTab('consultar',this)"><i class="ti ti-list"></i> Consultar tickets</button>
+      <button class="tab" onclick="switchTab('csat',this)"><i class="ti ti-star"></i> Comparação CSAT</button>
     </div>
 
     <!-- Status -->
@@ -726,5 +754,35 @@ function stopAgent(){
   addLog('info','Agente pausado.');
 }
 </script>
+    <!-- Comparação CSAT -->
+    <div class="section" id="tab-csat">
+      <div class="card">
+        <p class="card-title">Comparação CSAT <span class="ai-badge">IA vs Humano</span></p>
+        <p class="card-sub">Busca tickets resolvidos com avaliação positiva, compara a resposta humana com a resposta gerada pela IA e avalia a assertividade de 1 a 5.</p>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Filtrar por tag (opcional)</label>
+            <input type="text" id="csat-tag" placeholder="ex: portrh, atend_progr" value="portrh" />
+          </div>
+          <div class="field">
+            <label>Quantidade de tickets</label>
+            <select id="csat-limit">
+              <option value="5">5 tickets</option>
+              <option value="10" selected>10 tickets</option>
+              <option value="20">20 tickets</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="loadCsatComparison()">
+          <div class="spinner" id="csat-spinner"></div>
+          <i class="ti ti-download"></i> Carregar tickets CSAT
+        </button>
+
+        <div id="csat-results" style="margin-top:20px"></div>
+      </div>
+    </div>
+
 </body>
 </html>
