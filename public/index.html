@@ -314,31 +314,49 @@ textarea{resize:vertical;}
 
     <!-- Comparação CSAT -->
     <div class="section" id="tab-csat">
-      <!-- Painel de médias por categoria -->
+
+      <!-- Painel de médias -->
       <div class="card">
-        <p class="card-title">Assertividade por categoria</p>
-        <p class="card-sub">Média de pontuação do agente IA por categoria — mostra onde está faltando mais contexto na base de conhecimento.</p>
+        <p class="card-title">Assertividade por Produto e Classificação</p>
+        <p class="card-sub">Média de pontuação do agente IA agrupada pelos campos do Zendesk — identifica onde falta mais contexto na base de conhecimento.</p>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <button class="cat-filter-btn active" id="panel-group-produto" onclick="setPanelGroup('produto',this)">Agrupar por Produto</button>
+          <button class="cat-filter-btn" id="panel-group-class" onclick="setPanelGroup('classificacao',this)">Agrupar por Classificação</button>
+        </div>
         <div class="cat-score-grid" id="cat-score-grid">
-          <p style="font-size:13px;color:var(--text2);grid-column:1/-1">Avalie tickets abaixo para ver as médias aparecerem aqui.</p>
+          <p style="font-size:13px;color:var(--text2);grid-column:1/-1">Avalie tickets abaixo para ver as médias aqui.</p>
         </div>
       </div>
 
-      <!-- Filtros e carregamento -->
+      <!-- Filtros -->
       <div class="card">
-        <p class="card-title">Comparação CSAT <span class="ai-badge">IA vs Humano</span></p>
-        <p class="card-sub">Busca tickets resolvidos com avaliação positiva e compara a resposta humana com a resposta da IA.</p>
+        <p class="card-title">Comparação CSAT <span class="ai-badge">IA + Humano avaliados</span></p>
+        <p class="card-sub">Busca tickets com CSAT positivo, compara resposta humana vs IA, e a IA também avalia a qualidade da resposta humana.</p>
 
-        <label style="margin-bottom:8px;display:block">Filtrar por categoria de ticket</label>
-        <div class="cat-filter-row" id="csat-cat-filters">
-          <button class="cat-filter-btn active" data-tag="" onclick="setCsatFilter(this,'')">Todas</button>
-          <button class="cat-filter-btn" data-tag="portrh" onclick="setCsatFilter(this,'portrh')"><span style="width:8px;height:8px;border-radius:50%;background:#1D9E75;display:inline-block"></span> Portal RH</button>
-          <button class="cat-filter-btn" data-tag="atend_progr" onclick="setCsatFilter(this,'atend_progr')"><span style="width:8px;height:8px;border-radius:50%;background:#7F77DD;display:inline-block"></span> Atend. Programado</button>
-          <button class="cat-filter-btn" data-tag="servidor_cliente" onclick="setCsatFilter(this,'servidor_cliente')"><span style="width:8px;height:8px;border-radius:50%;background:#D85A30;display:inline-block"></span> Servidor Cliente</button>
-          <button class="cat-filter-btn" data-tag="web_widget" onclick="setCsatFilter(this,'web_widget')"><span style="width:8px;height:8px;border-radius:50%;background:#D4537E;display:inline-block"></span> Web Widget</button>
+        <label style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px;display:block">Filtrar por Produto</label>
+        <div class="cat-filter-row" id="csat-produto-filters">
+          <button class="cat-filter-btn active" onclick="setCsatProduto(this,'')" data-v="">Todos</button>
+          <button class="cat-filter-btn" onclick="setCsatProduto(this,'produto_portal_rh')" data-v="produto_portal_rh">Portal RH</button>
+          <button class="cat-filter-btn" onclick="setCsatProduto(this,'produto_folha_de_pagamento')" data-v="produto_folha_de_pagamento">Folha de Pagamento</button>
+          <button class="cat-filter-btn" onclick="setCsatProduto(this,'produto_frequencia')" data-v="produto_frequencia">Frequência</button>
+          <button class="cat-filter-btn" onclick="setCsatProduto(this,'produto_esocial')" data-v="produto_esocial">eSocial</button>
+          <button class="cat-filter-btn" onclick="setCsatProduto(this,'produto_acesso')" data-v="produto_acesso">Acesso</button>
+          <button class="cat-filter-btn" onclick="setCsatProduto(this,'produto_beneficios')" data-v="produto_beneficios">Benefícios</button>
+          <button class="cat-filter-btn" onclick="setCsatProduto(this,'produto_recrutamento_e_selecao')" data-v="produto_recrutamento_e_selecao">R&S</button>
+          <button class="cat-filter-btn" onclick="setCsatProduto(this,'produto_metaciclo')" data-v="produto_metaciclo">Metaciclo</button>
         </div>
 
-        <div class="field-row">
-          <div class="field"><label>Tag personalizada (opcional)</label><input type="text" id="csat-tag-custom" placeholder="ex: portrh, sub_portrh_infra" /></div>
+        <label style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px;display:block;margin-top:12px">Filtrar por Classificação</label>
+        <div class="cat-filter-row" id="csat-class-filters">
+          <button class="cat-filter-btn active" onclick="setCsatClass(this,'')" data-v="">Todas</button>
+          <button class="cat-filter-btn" onclick="setCsatClass(this,'chamado')" data-v="chamado">Chamado</button>
+          <button class="cat-filter-btn" onclick="setCsatClass(this,'serviço')" data-v="serviço">Serviço</button>
+          <button class="cat-filter-btn" onclick="setCsatClass(this,'correção')" data-v="correção">Correção</button>
+          <button class="cat-filter-btn" onclick="setCsatClass(this,'dúvida')" data-v="dúvida">Dúvida</button>
+          <button class="cat-filter-btn" onclick="setCsatClass(this,'melhoria_produto')" data-v="melhoria_produto">Melhoria</button>
+        </div>
+
+        <div class="field-row" style="margin-top:12px">
           <div class="field"><label>Quantidade de tickets</label><select id="csat-limit"><option value="5">5 tickets</option><option value="10" selected>10 tickets</option><option value="20">20 tickets</option></select></div>
         </div>
 
@@ -366,6 +384,10 @@ let csatScores = {};
 let csatNotes = {};
 let csatCategories = {};
 let selectedCsatTag = '';
+let selectedCsatProduto = '';
+let selectedCsatClass = '';
+let panelGroupBy = 'produto';
+let csatData = {};
 
 const scoreDescriptions = {
   1:'Resposta incorreta ou muito distante',
@@ -393,7 +415,7 @@ let categories = [];
 try { categories = JSON.parse(localStorage.getItem('zd_kb_categories')||'null') || defaultCategories.map(c=>({...c})); } catch(e) { categories = defaultCategories.map(c=>({...c})); }
 let selectedCatId = null;
 
-// ── AUTH ──
+// -- AUTH --
 async function doLogin() {
   const pwd = document.getElementById('login-password').value;
   if (!pwd) return;
@@ -424,7 +446,7 @@ function doLogout() {
   if (agentInterval) { clearInterval(agentInterval); agentInterval = null; }
 }
 
-// ── PROXY HELPERS ──
+// -- PROXY HELPERS --
 function proxyHeaders(extra) { return Object.assign({'Content-Type':'application/json','x-panel-password':SESSION_PASSWORD}, extra||{}); }
 async function zdFetch(path, method, body) {
   method = method||'GET';
@@ -462,7 +484,7 @@ function buildSystemPrompt(catId, tom, ragContext) {
   return sys;
 }
 
-// ── UI HELPERS ──
+// -- UI HELPERS --
 function showResult(id, text, isError) {
   const el = document.getElementById(id);
   el.style.display = 'block';
@@ -477,12 +499,12 @@ function switchTab(name, btn) {
   btn.classList.add('active');
 }
 
-// ── CATEGORIES ──
+// -- CATEGORIES --
 function saveCategories() { try { localStorage.setItem('zd_kb_categories',JSON.stringify(categories)); } catch(e) {} }
 function renderCatList() {
   const list = document.getElementById('cat-list');
   if (!categories.length) { list.innerHTML='<p style="font-size:13px;color:var(--text2)">Nenhuma categoria.</p>'; return; }
-  list.innerHTML = categories.map(c=>'<div class="cat-item '+(selectedCatId===c.id?'selected':'')+'" onclick="selectCat(\''+c.id+'\')"><div class="cat-dot" style="background:'+c.color+'"></div><span class="cat-name">'+c.name+'</span>'+(c.kb?'<span class="cat-preview">'+c.kb.substring(0,60)+(c.kb.length>60?'…':'')+'</span><span class="cat-filled">✓ preenchida</span>':'<span class="cat-empty">vazia</span>')+'</div>').join('');
+  list.innerHTML = categories.map(c=>'<div class="cat-item '+(selectedCatId===c.id?'selected':'')+'" onclick="selectCat(\''+c.id+'\')"><div class="cat-dot" style="background:'+c.color+'"></div><span class="cat-name">'+c.name+'</span>'+(c.kb?'<span class="cat-preview">'+c.kb.substring(0,60)+(c.kb.length>60?'...':'')+'</span><span class="cat-filled">v preenchida</span>':'<span class="cat-empty">vazia</span>')+'</div>').join('');
   updateCategorySelects();
 }
 function selectCat(id) {
@@ -523,19 +545,19 @@ function updateCategorySelects() {
   ['resp-categoria','auto-categoria'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=opts; });
 }
 
-// ── STATUS ──
+// -- STATUS --
 async function testConnection() {
   setSpinner('test-spinner',true);
   try {
     const r=await zdFetch('/users/me.json');
     const d=await r.json();
-    if(r.ok) showResult('test-result','✓ Conectado como: '+d.user.name+' ('+d.user.email+')\nFunção: '+d.user.role,false);
+    if(r.ok) showResult('test-result','v Conectado como: '+d.user.name+' ('+d.user.email+')\nFunção: '+d.user.role,false);
     else showResult('test-result','Erro '+r.status+': '+(d.error||'Verifique as variáveis de ambiente.'),true);
   } catch(e) { showResult('test-result','Erro: '+e.message,true); }
   setSpinner('test-spinner',false);
 }
 
-// ── RAG TEST ──
+// -- RAG TEST --
 async function testRag() {
   const query=document.getElementById('rag-query').value.trim();
   const max=parseInt(document.getElementById('rag-max').value);
@@ -552,7 +574,7 @@ async function testRag() {
   setSpinner('rag-spinner',false);
 }
 
-// ── RESPONDER TICKET ──
+// -- RESPONDER TICKET --
 async function generateReply() {
   const contexto=document.getElementById('resp-contexto').value.trim();
   const tom=document.getElementById('resp-tom').value;
@@ -565,7 +587,7 @@ async function generateReply() {
   try {
     const articles=await ragSearch(contexto,5);
     const ragContext=articlesToContext(articles);
-    if (articles.length) { document.getElementById('resp-rag-text').textContent=articles.length+' artigos: '+articles.map(a=>a.title).join(' · '); document.getElementById('resp-rag-info').style.display='flex'; }
+    if (articles.length) { document.getElementById('resp-rag-text').textContent=articles.length+' artigos: '+articles.map(a=>a.title).join(' - '); document.getElementById('resp-rag-info').style.display='flex'; }
     showResult('resp-result','Gerando resposta...',false);
     const reply=await callAI(buildSystemPrompt(catId,tom,ragContext),'Ticket: '+contexto);
     lastGeneratedReply=reply;
@@ -581,13 +603,13 @@ async function sendReply() {
   try {
     const r=await zdFetch('/tickets/'+ticketId+'.json','PUT',{ticket:{comment:{body:lastGeneratedReply,public:true}}});
     const d=await r.json();
-    if(r.ok) showResult('resp-result','✓ Enviado ao ticket #'+ticketId+'!\n\n'+lastGeneratedReply,false);
+    if(r.ok) showResult('resp-result','v Enviado ao ticket #'+ticketId+'!\n\n'+lastGeneratedReply,false);
     else showResult('resp-result','Erro: '+JSON.stringify(d.error),true);
   } catch(e) { showResult('resp-result','Erro: '+e.message,true); }
   setSpinner('send-spinner',false);
 }
 
-// ── TRIAGEM ──
+// -- TRIAGEM --
 async function triageTicket() {
   const content=document.getElementById('triage-content').value.trim();
   if (!content) { showResult('triage-result','Insira o conteúdo.',true); return; }
@@ -611,13 +633,13 @@ async function applyTriage() {
   try {
     const r=await zdFetch('/tickets/'+ticketId+'.json','PUT',{ticket:{priority:lastTriageData.prioridade,tags:lastTriageData.tags,comment:{body:'[IA] Triagem: '+lastTriageData.resumo,public:false}}});
     const d=await r.json();
-    if(r.ok) showResult('triage-result','✓ Aplicado ao ticket #'+ticketId,false);
+    if(r.ok) showResult('triage-result','v Aplicado ao ticket #'+ticketId,false);
     else showResult('triage-result','Erro: '+JSON.stringify(d.error),true);
   } catch(e) { showResult('triage-result','Erro: '+e.message,true); }
   setSpinner('apply-spinner',false);
 }
 
-// ── CRIAR AGENTE ──
+// -- CRIAR AGENTE --
 async function createAgent() {
   const name=document.getElementById('agent-name').value.trim();
   const email=document.getElementById('agent-email').value.trim();
@@ -628,13 +650,13 @@ async function createAgent() {
   try {
     const r=await zdFetch('/users.json','POST',{user:{name,email,role,password:password||undefined}});
     const d=await r.json();
-    if(r.ok) showResult('criar-result','✓ Agente criado!\nID: '+d.user.id+'\nNome: '+d.user.name+'\nE-mail: '+d.user.email,false);
+    if(r.ok) showResult('criar-result','v Agente criado!\nID: '+d.user.id+'\nNome: '+d.user.name+'\nE-mail: '+d.user.email,false);
     else showResult('criar-result','Erro: '+JSON.stringify(d.errors||d.error),true);
   } catch(e) { showResult('criar-result','Erro: '+e.message,true); }
   setSpinner('criar-spinner',false);
 }
 
-// ── CONSULTAR TICKETS ──
+// -- CONSULTAR TICKETS --
 async function fetchTickets() {
   const status=document.getElementById('filter-status').value;
   const limit=document.getElementById('filter-limit').value;
@@ -655,7 +677,7 @@ async function fetchTickets() {
   setSpinner('consultar-spinner',false);
 }
 
-// ── AGENTE AUTOMÁTICO ──
+// -- AGENTE AUTOMÁTICO --
 function addLog(type,msg) {
   const ts=new Date().toLocaleTimeString('pt-BR');
   agentLogs.unshift({type,msg,ts});
@@ -688,7 +710,7 @@ async function runAgentCycle() {
           addLog('info',articles.length+' artigo(s) encontrado(s).');
           const reply=await callAI(buildSystemPrompt(catId,tom,articlesToContext(articles)),'Ticket: '+ticket.subject+'\n\n'+(ticket.description||''));
           const upd=await zdFetch('/tickets/'+ticket.id+'.json','PUT',{ticket:{comment:{body:reply,public:isPublic}}});
-          if(upd.ok) addLog('ok','✓ #'+ticket.id+' respondido.');
+          if(upd.ok) addLog('ok','v #'+ticket.id+' respondido.');
           else addLog('err','Falha ao responder #'+ticket.id+'.');
         } catch(e) { addLog('err','Erro #'+ticket.id+': '+e.message); }
       }
@@ -702,7 +724,7 @@ function startAgent() {
   document.getElementById('btn-stop-agent').style.display='inline-flex';
   document.getElementById('polling-status').style.display='flex';
   document.getElementById('status-dot').className='dot-live';
-  document.getElementById('status-text').textContent='Agente ativo — a cada '+sec+'s';
+  document.getElementById('status-text').textContent='Agente ativo - a cada '+sec+'s';
   addLog('ok','Agente iniciado.');
   runAgentCycle();
   agentInterval=setInterval(runAgentCycle,sec*1000);
@@ -716,33 +738,85 @@ function stopAgent() {
   addLog('info','Agente pausado.');
 }
 
-// ── CSAT COMPARISON ──
-function setCsatFilter(btn, tag) {
-  document.querySelectorAll('.cat-filter-btn').forEach(b=>b.classList.remove('active'));
+// -- CSAT COMPARISON --
+const FIELD_PRODUTO = '360004348452';
+const FIELD_CLASS   = '360012068892';
+
+const PRODUTO_LABELS = {
+  'produto_folha_de_pagamento':'Folha de Pagamento','produto_frequencia':'Frequência',
+  'produto_beneficios':'Benefícios','produto_recrutamento_e_selecao':'R&S',
+  'produto_treinamento_e_desenvolvimento':'T&D','produto_avaliacao_de_desempenho':'Av. Desempenho',
+  'produto_segurança_do_trabalho':'Seg. Trabalho','produto_saude_ocupacional':'Saúde Ocup.',
+  'produto_gestao_de_cargos_e_salarios':'Cargos e Sal.','produto_juridico_trabalhista':'Jurídico',
+  'produto_portal_rh':'Portal RH','produto_indicadores':'Indicadores',
+  'produto_acesso':'Acesso','produto_esocial':'eSocial','produto_metaciclo':'Metaciclo'
+};
+const CLASS_LABELS = {
+  'chamado':'Chamado','serviço':'Serviço','correção':'Correção',
+  'dúvida':'Dúvida','melhoria_produto':'Melhoria'
+};
+
+function setCsatProduto(btn, val) {
+  document.querySelectorAll('#csat-produto-filters .cat-filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  selectedCsatTag = tag;
-  document.getElementById('csat-tag-custom').value = '';
+  selectedCsatProduto = val;
+}
+function setCsatClass(btn, val) {
+  document.querySelectorAll('#csat-class-filters .cat-filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedCsatClass = val;
+}
+function setPanelGroup(group, btn) {
+  document.querySelectorAll('#cat-score-grid').forEach(()=>{});
+  document.getElementById('panel-group-produto').classList.toggle('active', group==='produto');
+  document.getElementById('panel-group-class').classList.toggle('active', group==='classificacao');
+  panelGroupBy = group;
+  updateCatScorePanel();
 }
 
 async function loadCsatComparison() {
-  const customTag = document.getElementById('csat-tag-custom').value.trim();
-  const tag = customTag || selectedCsatTag;
   const limit = document.getElementById('csat-limit').value;
   const resultsEl = document.getElementById('csat-results');
   setSpinner('csat-spinner', true);
-  resultsEl.innerHTML = '<p style="font-size:13px;color:var(--text2)">Buscando tickets com avaliação positiva...</p>';
-  csatScores = {}; csatNotes = {}; csatCategories = {};
+  csatScores = {}; csatNotes = {}; csatCategories = {}; csatData = {};
+  resultsEl.innerHTML = '<p style="font-size:13px;color:var(--text2)">Buscando tickets com CSAT positivo...</p>';
 
   try {
-    const r = await zdFetch('/satisfaction_ratings.json?score=good&per_page='+limit+'&sort_order=desc');
+    const r = await zdFetch('/satisfaction_ratings.json?score=good&per_page=50&sort_order=desc');
     const d = await r.json();
     if (!r.ok) { resultsEl.innerHTML='<p style="color:var(--red)">Erro: '+d.error+'</p>'; setSpinner('csat-spinner',false); return; }
 
     let ratings = d.satisfaction_ratings||[];
-    if (tag) ratings = ratings.filter(rt=>(rt.ticket&&rt.ticket.tags||[]).some(t=>t.includes(tag)));
+
+    // Filtrar por produto e classificação via campos customizados
+    if (selectedCsatProduto || selectedCsatClass) {
+      const filtered = [];
+      for (const rt of ratings) {
+        if (filtered.length >= parseInt(limit)) break;
+        try {
+          const tr = await zdFetch('/tickets/'+rt.ticket_id+'.json');
+          const td = await tr.json();
+          const fields = td.ticket&&td.ticket.custom_fields||[];
+          const produto = (fields.find(f=>f.id==FIELD_PRODUTO)||{}).value||'';
+          const classif = (fields.find(f=>f.id==FIELD_CLASS)||{}).value||'';
+          const matchProduto = !selectedCsatProduto || produto===selectedCsatProduto;
+          const matchClass = !selectedCsatClass || classif===selectedCsatClass;
+          if (matchProduto && matchClass) {
+            rt._produto = produto;
+            rt._classificacao = classif;
+            filtered.push(rt);
+          }
+        } catch(e) {}
+      }
+      ratings = filtered;
+    } else {
+      ratings = ratings.slice(0, parseInt(limit));
+    }
+
     if (!ratings.length) { resultsEl.innerHTML='<p style="font-size:13px;color:var(--text2)">Nenhum ticket encontrado com esse filtro.</p>'; setSpinner('csat-spinner',false); return; }
 
-    resultsEl.innerHTML = ratings.map((rt,i)=>renderCsatCard(rt,i)).join('')+'<div class="btn-row" style="margin-top:16px"><button class="btn btn-primary" onclick="exportCsatResults()"><i class="ti ti-file-export"></i> Exportar CSV</button></div>';
+    resultsEl.innerHTML = ratings.map((rt,i)=>renderCsatCard(rt,i)).join('')+
+      '<div class="btn-row" style="margin-top:16px"><button class="btn btn-primary" onclick="exportCsatResults()"><i class="ti ti-file-export"></i> Exportar CSV</button></div>';
 
     for (let i=0; i<ratings.length; i++) await loadCsatTicket(ratings[i], i);
 
@@ -752,22 +826,37 @@ async function loadCsatComparison() {
 
 function renderCsatCard(rt, i) {
   const ticket = rt.ticket||{};
-  const tags = (ticket.tags||[]).join(', ');
+  const produto = PRODUTO_LABELS[rt._produto||'']||rt._produto||'-';
+  const classif = CLASS_LABELS[rt._classificacao||'']||rt._classificacao||'-';
   return '<div class="csat-card" id="csat-card-'+i+'">'+
     '<div class="csat-header">'+
     '<span class="csat-ticket-id">#'+rt.ticket_id+'</span>'+
     '<span class="csat-subject">'+(ticket.subject||'(sem assunto)')+'</span>'+
-    (tags?'<span style="font-size:11px;color:var(--text2)">'+tags+'</span>':'')+
+    '<span style="font-size:11px;background:var(--blue-bg);color:var(--blue);border-radius:99px;padding:2px 8px">'+produto+'</span>'+
+    '<span style="font-size:11px;background:var(--bg3);color:var(--text2);border-radius:99px;padding:2px 8px">'+classif+'</span>'+
     '<span class="csat-good"><i class="ti ti-thumb-up" style="font-size:10px"></i> CSAT positivo</span>'+
     '</div>'+
     '<div class="csat-body">'+
-    '<div class="csat-col"><p class="csat-col-title"><i class="ti ti-user" style="font-size:11px"></i> Resposta humana</p><div class="csat-text loading" id="human-'+i+'">Carregando...</div></div>'+
-    '<div class="csat-col"><p class="csat-col-title"><i class="ti ti-sparkles" style="font-size:11px"></i> Resposta IA <span class="ai-badge">RAG</span></p><div class="csat-text loading" id="ai-'+i+'">Gerando...</div></div>'+
+    '<div class="csat-col">'+
+      '<p class="csat-col-title"><i class="ti ti-user" style="font-size:11px"></i> Resposta humana</p>'+
+      '<div class="csat-text loading" id="human-'+i+'">Carregando...</div>'+
+      '<div style="margin-top:10px">'+
+        '<p style="font-size:11px;color:var(--text2);font-weight:500;margin-bottom:6px">Avaliação da resposta humana:</p>'+
+        '<div class="score-stars">'+[1,2,3,4,5].map(s=>'<div class="star" id="hstar-'+i+'-'+s+'" onclick="setHumanScore('+i+','+s+')" title="'+scoreDescriptions[s]+'">'+s+'</div>').join('')+'</div>'+
+        '<span class="score-desc" id="hscore-desc-'+i+'" style="font-size:11px">Clique para avaliar</span>'+
+      '</div>'+
+    '</div>'+
+    '<div class="csat-col">'+
+      '<p class="csat-col-title"><i class="ti ti-sparkles" style="font-size:11px"></i> Resposta IA <span class="ai-badge">RAG</span></p>'+
+      '<div class="csat-text loading" id="ai-'+i+'">Gerando com IA...</div>'+
+      '<div style="margin-top:10px">'+
+        '<p style="font-size:11px;color:var(--text2);font-weight:500;margin-bottom:6px">Avaliação da resposta IA:</p>'+
+        '<div class="score-stars">'+[1,2,3,4,5].map(s=>'<div class="star" id="star-'+i+'-'+s+'" onclick="setScore('+i+','+s+')" title="'+scoreDescriptions[s]+'">'+s+'</div>').join('')+'</div>'+
+        '<span class="score-desc" id="score-desc-'+i+'" style="font-size:11px">Clique para avaliar</span>'+
+      '</div>'+
+    '</div>'+
     '</div>'+
     '<div class="csat-footer">'+
-    '<span class="score-label">Assertividade:</span>'+
-    '<div class="score-stars">'+[1,2,3,4,5].map(s=>'<div class="star" id="star-'+i+'-'+s+'" onclick="setScore('+i+','+s+')" title="'+scoreDescriptions[s]+'">'+s+'</div>').join('')+'</div>'+
-    '<span class="score-desc" id="score-desc-'+i+'">Clique para avaliar</span>'+
     '<input type="text" class="csat-note" id="note-'+i+'" placeholder="Observação (opcional)" oninput="csatNotes['+i+']=this.value" />'+
     '</div>'+
     '</div>';
@@ -776,6 +865,15 @@ function renderCsatCard(rt, i) {
 async function loadCsatTicket(rt, i) {
   const ticketId = rt.ticket_id;
   try {
+    // Buscar campos customizados se ainda não temos
+    if (!rt._produto) {
+      const tr = await zdFetch('/tickets/'+ticketId+'.json');
+      const td = await tr.json();
+      const fields = td.ticket&&td.ticket.custom_fields||[];
+      rt._produto = (fields.find(f=>f.id==FIELD_PRODUTO)||{}).value||'';
+      rt._classificacao = (fields.find(f=>f.id==FIELD_CLASS)||{}).value||'';
+    }
+
     const cr = await zdFetch('/tickets/'+ticketId+'/comments.json');
     const cd = await cr.json();
     const comments = (cd.comments||[]).filter(c=>c.public);
@@ -787,9 +885,16 @@ async function loadCsatTicket(rt, i) {
     const firstComment = comments[0];
     const ticketContent = (rt.ticket&&rt.ticket.subject||'')+'\n\n'+(firstComment&&firstComment.body||'');
 
-    // Detectar categoria pelo assunto/tags
-    const tags = (rt.ticket&&rt.ticket.tags)||[];
-    csatCategories[i] = detectCategory(rt.ticket&&rt.ticket.subject||'', tags);
+    // Guardar dados para o painel
+    csatData[i] = {
+      produto: rt._produto||'',
+      classificacao: rt._classificacao||'',
+      produtoLabel: PRODUTO_LABELS[rt._produto]||rt._produto||'Outros',
+      classifLabel: CLASS_LABELS[rt._classificacao]||rt._classificacao||'Outros',
+      aiScore: null,
+      humanScore: null
+    };
+    csatCategories[i] = csatData[i].produtoLabel;
 
     const articles = await ragSearch(ticketContent.substring(0,300), 4);
     const aiText = await callAI(buildSystemPrompt('','formal',articlesToContext(articles)), 'Ticket: '+ticketContent.substring(0,800));
@@ -802,20 +907,9 @@ async function loadCsatTicket(rt, i) {
   }
 }
 
-function detectCategory(subject, tags) {
-  const s = (subject+' '+tags.join(' ')).toLowerCase();
-  if (tags.includes('portrh')||s.includes('portal rh')) return 'Portal RH';
-  if (tags.includes('atend_progr')) return 'Atend. Programado';
-  if (tags.includes('servidor_cliente')) return 'Servidor Cliente';
-  if (tags.includes('web_widget')) return 'Web Widget';
-  if (s.includes('folha')||s.includes('pagamento')) return 'Folha de Pagamento';
-  if (s.includes('acesso')||s.includes('login')||s.includes('senha')) return 'Acesso / Login';
-  if (s.includes('erro')||s.includes('error')) return 'Erro do Sistema';
-  return 'Geral';
-}
-
 function setScore(cardIndex, score) {
   csatScores[cardIndex] = score;
+  if (csatData[cardIndex]) csatData[cardIndex].aiScore = score;
   for (let s=1; s<=5; s++) {
     const star=document.getElementById('star-'+cardIndex+'-'+s);
     if (star) star.classList.toggle('active', s<=score);
@@ -825,37 +919,73 @@ function setScore(cardIndex, score) {
   updateCatScorePanel();
 }
 
+function setHumanScore(cardIndex, score) {
+  if (csatData[cardIndex]) csatData[cardIndex].humanScore = score;
+  for (let s=1; s<=5; s++) {
+    const star=document.getElementById('hstar-'+cardIndex+'-'+s);
+    if (star) star.classList.toggle('active', s<=score);
+  }
+  const desc=document.getElementById('hscore-desc-'+cardIndex);
+  if (desc) desc.textContent=scoreDescriptions[score];
+  updateCatScorePanel();
+}
+
 function updateCatScorePanel() {
-  const catData = {};
-  Object.keys(csatScores).forEach(i => {
-    const cat = csatCategories[i]||'Geral';
-    if (!catData[cat]) catData[cat]={total:0,count:0};
-    catData[cat].total += csatScores[i];
-    catData[cat].count++;
+  const aiByGroup = {};
+  const humanByGroup = {};
+
+  Object.keys(csatData).forEach(i => {
+    const d = csatData[i];
+    const groupKey = panelGroupBy==='produto' ? (d.produtoLabel||'Outros') : (d.classifLabel||'Outros');
+    if (d.aiScore != null) {
+      if (!aiByGroup[groupKey]) aiByGroup[groupKey]={total:0,count:0};
+      aiByGroup[groupKey].total += d.aiScore;
+      aiByGroup[groupKey].count++;
+    }
+    if (d.humanScore != null) {
+      if (!humanByGroup[groupKey]) humanByGroup[groupKey]={total:0,count:0};
+      humanByGroup[groupKey].total += d.humanScore;
+      humanByGroup[groupKey].count++;
+    }
   });
-  if (!Object.keys(catData).length) return;
+
+  const allGroups = [...new Set([...Object.keys(aiByGroup),...Object.keys(humanByGroup)])];
+  if (!allGroups.length) return;
 
   const grid = document.getElementById('cat-score-grid');
-  grid.innerHTML = Object.entries(catData).map(([cat,d])=>{
-    const avg = (d.total/d.count).toFixed(1);
-    const pct = Math.round((avg/5)*100);
-    const cls = avg>=4?'great':avg>=3?'ok':'bad';
-    const tip = avg>=4?'Pronto para produção':avg>=3?'Melhorar base de conhecimento':'Precisa de mais treinamento';
-    const barColor = avg>=4?'var(--green)':avg>=3?'#d48000':'var(--red)';
+  grid.innerHTML = allGroups.map(group => {
+    const ai = aiByGroup[group];
+    const human = humanByGroup[group];
+    const aiAvg = ai ? (ai.total/ai.count).toFixed(1) : '-';
+    const humanAvg = human ? (human.total/human.count).toFixed(1) : '-';
+    const aiNum = ai ? ai.total/ai.count : 0;
+    const humanNum = human ? human.total/human.count : 0;
+    const cls = aiNum>=4?'great':aiNum>=3?'ok':'bad';
+    const tip = aiNum>=4?'Pronto para produção':aiNum>=3?'Melhorar base de conhecimento':'Precisa de mais treinamento';
+    const barColor = aiNum>=4?'var(--green)':aiNum>=3?'#d48000':'var(--red)';
+    const aiPct = Math.round((aiNum/5)*100);
+    const humanPct = Math.round((humanNum/5)*100);
     return '<div class="cat-score-card">'+
-      '<p class="cat-score-name">'+cat+'</p>'+
-      '<p class="cat-score-avg '+cls+'">'+avg+'<span style="font-size:14px;color:var(--text2)">/5</span></p>'+
-      '<p class="cat-score-count">'+d.count+' ticket'+(d.count>1?'s':'')+' avaliado'+(d.count>1?'s':'')+'</p>'+
-      '<div class="cat-score-bar"><div class="cat-score-fill" style="width:'+pct+'%;background:'+barColor+'"></div></div>'+
+      '<p class="cat-score-name">'+group+'</p>'+
+      '<div style="display:flex;gap:12px;justify-content:center;margin-bottom:8px">'+
+        '<div style="text-align:center"><p style="font-size:10px;color:var(--text2);margin-bottom:2px">Humano</p><p class="cat-score-avg" style="font-size:22px;color:var(--blue)">'+humanAvg+'</p></div>'+
+        '<div style="font-size:20px;color:var(--text3);align-self:center">vs</div>'+
+        '<div style="text-align:center"><p style="font-size:10px;color:var(--text2);margin-bottom:2px">IA</p><p class="cat-score-avg '+cls+'" style="font-size:22px">'+aiAvg+'</p></div>'+
+      '</div>'+
+      '<div class="cat-score-bar" style="margin-bottom:4px"><div class="cat-score-fill" style="width:'+humanPct+'%;background:var(--blue)"></div></div>'+
+      '<div class="cat-score-bar"><div class="cat-score-fill" style="width:'+aiPct+'%;background:'+barColor+'"></div></div>'+
+      '<p class="cat-score-count" style="margin-top:6px">'+(ai?ai.count:0)+' avaliado'+(ai&&ai.count>1?'s':'')+'</p>'+
       '<p class="cat-score-tip '+cls+'">'+tip+'</p>'+
       '</div>';
   }).join('');
 }
 
 function exportCsatResults() {
-  const rows=[['Índice','Categoria','Pontuação','Observação']];
-  Object.keys(csatScores).forEach(i=>{
-    rows.push([i, csatCategories[i]||'', csatScores[i], csatNotes[i]||'']);
+  const rows=[['Ticket','Produto','Classificação','Nota Humano','Nota IA','Diferença','Observação']];
+  Object.keys(csatData).forEach(i=>{
+    const d=csatData[i];
+    const diff = (d.aiScore!=null&&d.humanScore!=null) ? (d.aiScore-d.humanScore).toFixed(1) : '-';
+    rows.push([i, d.produtoLabel||'', d.classifLabel||'', d.humanScore||'', d.aiScore||'', diff, csatNotes[i]||'']);
   });
   const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
